@@ -13,7 +13,7 @@ class AuthScreen extends StatefulWidget {
   }
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _AuthScreenState extends State<AuthScreen> {  
   final _form = GlobalKey<FormState>();
   var _isLogin = true;
   var _enteredEmail = '';
@@ -35,6 +35,7 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _enteredEmail,
           password: _enteredPassword,
         );
+        print('Logged in user email: ${userCredential.user?.email}');
       } else {
         final userCredential = await _firebase.createUserWithEmailAndPassword(
           email: _enteredEmail,
