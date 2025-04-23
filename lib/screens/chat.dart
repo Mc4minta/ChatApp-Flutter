@@ -27,7 +27,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
 
-    setupPushNotifications(); 
+    setupPushNotifications();
   }
 
   @override
