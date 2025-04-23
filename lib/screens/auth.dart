@@ -1,10 +1,14 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final _firebase = FirebaseAuth.instance;
+final _supabase = Supabase.instance.client;
+final ImagePicker _picker = ImagePicker();
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -22,39 +26,70 @@ class _AuthScreenState extends State<AuthScreen> {
   var _enteredPassword = '';
   var _enteredUsername = '';
   File? _pickedImage;
-  final ImagePicker _picker = ImagePicker();
 
-  // Submit function
   void submit() async {
     final isValid = _form.currentState!.validate();
 
-    if (!isValid) {
+    if (!isValid || (_pickedImage == null && !_isLogin)) {
+      print('DEBUG: picked image null or non valid credentials');
       return;
     }
 
     _form.currentState!.save();
 
-    try { // sign up or login user with credentials
+    try {
       if (_isLogin) {
-        // Log user in with firebase auth
         final userCredential = await _firebase.signInWithEmailAndPassword(
           email: _enteredEmail,
           password: _enteredPassword,
         );
         print('DEBUG : Logged user in with: ${userCredential.user?.email}');
       } else {
-        // Sign user up with firebase auth
         final userCredential = await _firebase.createUserWithEmailAndPassword(
           email: _enteredEmail,
           password: _enteredPassword,
         );
+
+        try {
+          final fileBytes = await _pickedImage!.readAsBytes();
+          final fileExt = _pickedImage!.path.split('.').last;
+          final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+          final path = 'uploads/$fileName';
+
+          final response = await _supabase.storage
+              .from('images')
+              .uploadBinary(
+                path,
+                fileBytes,
+                fileOptions: FileOptions(contentType: 'image/$fileExt'),
+              );
+
+          final imageUrl = _supabase.storage.from('images').getPublicUrl(path);
+
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set({
+                'username': _enteredUsername,
+                'email': _enteredEmail,
+                'profileImageUrl': imageUrl,
+              });
+
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Image upload successful!")),
+          );
+        } catch (error) {
+          print('DEBUG: Error uploading image: $error');
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Failed to upload image: ${error.toString()}"),
+            ),
+          );
+        }
+
         print('DEBUG : Sign user up with: ${userCredential.user?.email}');
-        // Collect credentials in firestore
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            // TODO: add user image url to firestore
-            .set({'username': _enteredUsername, 'email': _enteredEmail});
       }
     } on FirebaseAuthException catch (error) {
       var message = error.message;
@@ -66,13 +101,16 @@ class _AuthScreenState extends State<AuthScreen> {
           message = 'Your email or password is not correct';
           break;
         case 'user-not-found':
-          message = 'User with this email don\'t exist please create an account';
+          message =
+              'User with this email doesn\'t exist. Please create an account';
           break;
         case 'invalid-credential':
           message = 'Your email or password is not correct';
+          break;
         default:
           message = error.message;
       }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message ?? 'Authentication failed.')),
@@ -82,7 +120,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  @override // auth screen widget
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -91,9 +129,8 @@ class _AuthScreenState extends State<AuthScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Container for picture and card
               Container(
-                margin: EdgeInsets.only(
+                margin: const EdgeInsets.only(
                   top: 30,
                   bottom: 20,
                   left: 20,
@@ -102,7 +139,6 @@ class _AuthScreenState extends State<AuthScreen> {
                 width: 200,
                 child: Image.asset('assets/images/chat.png'),
               ),
-              // Signup and Login Card
               Card(
                 margin: const EdgeInsets.all(20),
                 child: SingleChildScrollView(
@@ -112,46 +148,51 @@ class _AuthScreenState extends State<AuthScreen> {
                       key: _form,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
-                        // Card components
                         children: [
-                          // user image picker
                           if (!_isLogin)
-                          CircleAvatar(
-                            radius: 40,
-                            backgroundImage: _pickedImage != null ? FileImage(_pickedImage!) : null,
-                          ),
-                          // camera and gallery
-                          if(!_isLogin)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: () async {
-                                  var pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-                                  if (pickedFile != null) {
-                                    setState(() {
-                                      _pickedImage = File(pickedFile.path);
-                                    });
-                                  }
-                                }, 
-                                label: Icon(Icons.image),
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: () async{
-                                  var pickedFile = await _picker.pickImage(source: ImageSource.camera);
-                                  if (pickedFile != null) {
-                                    setState(() {
-                                      _pickedImage = File(pickedFile.path);
-                                    });
-                                  }
-                                }, 
-                                label: Icon(Icons.camera_alt),
-                              ),
-                            ],
-                          ),
-                          // Email form
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundImage:
+                                  _pickedImage != null
+                                      ? FileImage(_pickedImage!)
+                                      : null,
+                            ),
+                          if (!_isLogin)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: () async {
+                                    var pickedFile = await _picker.pickImage(
+                                      source: ImageSource.gallery,
+                                    );
+                                    if (pickedFile != null) {
+                                      setState(() {
+                                        _pickedImage = File(pickedFile.path);
+                                      });
+                                    }
+                                  },
+                                  icon: const Icon(Icons.image),
+                                  label: const Text("Gallery"),
+                                ),
+                                ElevatedButton.icon(
+                                  onPressed: () async {
+                                    var pickedFile = await _picker.pickImage(
+                                      source: ImageSource.camera,
+                                    );
+                                    if (pickedFile != null) {
+                                      setState(() {
+                                        _pickedImage = File(pickedFile.path);
+                                      });
+                                    }
+                                  },
+                                  icon: const Icon(Icons.camera_alt),
+                                  label: const Text("Camera"),
+                                ),
+                              ],
+                            ),
                           TextFormField(
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Email Address',
                             ),
                             keyboardType: TextInputType.emailAddress,
@@ -169,9 +210,10 @@ class _AuthScreenState extends State<AuthScreen> {
                               _enteredEmail = value!;
                             },
                           ),
-                          // Password form
                           TextFormField(
-                            decoration: InputDecoration(labelText: 'Password'),
+                            decoration: const InputDecoration(
+                              labelText: 'Password',
+                            ),
                             obscureText: true,
                             validator: (value) {
                               if (value == null || value.trim().length < 6) {
@@ -183,16 +225,13 @@ class _AuthScreenState extends State<AuthScreen> {
                               _enteredPassword = value!;
                             },
                           ),
-                          // Username form
                           if (!_isLogin)
                             TextFormField(
-                              decoration: InputDecoration(
-                                labelText: ('Username'),
+                              decoration: const InputDecoration(
+                                labelText: 'Username',
                               ),
                               validator: (value) {
-                                if (value == null ||
-                                    value.isEmpty ||
-                                    value.trim().length < 4) {
+                                if (value == null || value.trim().length < 4) {
                                   return 'Username must be at least 4 characters long.';
                                 }
                                 return null;
@@ -202,7 +241,6 @@ class _AuthScreenState extends State<AuthScreen> {
                               },
                             ),
                           const SizedBox(height: 12),
-                          // Signup and Login button
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
@@ -216,7 +254,6 @@ class _AuthScreenState extends State<AuthScreen> {
                             },
                             child: Text(_isLogin ? 'Login' : 'Signup'),
                           ),
-                          // Switch auth mode button
                           TextButton(
                             onPressed: () {
                               setState(() {
