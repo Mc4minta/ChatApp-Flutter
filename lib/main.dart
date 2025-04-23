@@ -6,17 +6,9 @@ import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 // const Color.fromARGB(255, 63, 17, 177)
 void main() async {
-  // supabase setup
-
-  await Supabase.initialize(
-    url : "https://wegdusqykmpezrhnzzzu.supabase.co",
-    anonKey : 
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlZ2R1c3F5a21wZXpyaG56enp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUzMDgwMDgsImV4cCI6MjA2MDg4NDAwOH0.bD977z8IaTDn-HMrCnZylzrqzLgfZFdBByxncBmK0fs",
-  );
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
