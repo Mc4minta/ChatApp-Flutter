@@ -122,7 +122,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
+      backgroundColor: Colors.white, // Theme.of(context).colorScheme.primary,
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -154,7 +154,9 @@ class _AuthScreenState extends State<AuthScreen> {
                               backgroundImage:
                                   _pickedImage != null
                                       ? FileImage(_pickedImage!)
-                                      : const AssetImage('assets/images/default-profile.jpg'),
+                                      : const AssetImage(
+                                        'assets/images/default-profile.jpg',
+                                      ),
                             ),
                           // User Image picker
                           if (!_isLogin)
