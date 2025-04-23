@@ -70,6 +70,7 @@ class _AuthScreenState extends State<AuthScreen> {
               .collection('users')
               .doc(userCredential.user!.uid)
               .set({
+                'createdAt': FieldValue.serverTimestamp(),
                 'username': _enteredUsername,
                 'email': _enteredEmail,
                 'profileImageUrl': imageUrl,
