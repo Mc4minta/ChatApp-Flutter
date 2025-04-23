@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
@@ -30,8 +29,7 @@ class _AuthScreenState extends State<AuthScreen> {
   void submit() async {
     final isValid = _form.currentState!.validate();
 
-    if (!isValid || (_pickedImage == null && !_isLogin)) {
-      print('DEBUG: picked image null or non valid credentials');
+    if (!isValid) {
       return;
     }
 
@@ -51,6 +49,9 @@ class _AuthScreenState extends State<AuthScreen> {
         );
 
         try {
+          if (_pickedImage == null){
+            _pickedImage = File('assets/images/default-profile.jpg');
+          }
           final fileBytes = await _pickedImage!.readAsBytes();
           final fileExt = _pickedImage!.path.split('.').last;
           final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
@@ -63,7 +64,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 fileBytes,
                 fileOptions: FileOptions(contentType: 'image/$fileExt'),
               );
-
+          
           final imageUrl = _supabase.storage.from('images').getPublicUrl(path);
 
           await FirebaseFirestore.instance
@@ -156,8 +157,9 @@ class _AuthScreenState extends State<AuthScreen> {
                               backgroundImage:
                                   _pickedImage != null
                                       ? FileImage(_pickedImage!)
-                                      : null,
+                                      : const AssetImage('assets/images/default-profile.jpg'),
                             ),
+                          // User Image picker
                           if (!_isLogin)
                             Row(
                               mainAxisSize: MainAxisSize.min,
@@ -192,6 +194,23 @@ class _AuthScreenState extends State<AuthScreen> {
                                 ),
                               ],
                             ),
+                          // Username Form
+                          if (!_isLogin)
+                            TextFormField(
+                              decoration: const InputDecoration(
+                                labelText: 'Username',
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().length < 4) {
+                                  return 'Username must be at least 4 characters long.';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) {
+                                _enteredUsername = value!;
+                              },
+                            ),
+                          // Email Form
                           TextFormField(
                             decoration: const InputDecoration(
                               labelText: 'Email Address',
@@ -211,6 +230,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               _enteredEmail = value!;
                             },
                           ),
+                          // Password Form
                           TextFormField(
                             decoration: const InputDecoration(
                               labelText: 'Password',
@@ -226,22 +246,8 @@ class _AuthScreenState extends State<AuthScreen> {
                               _enteredPassword = value!;
                             },
                           ),
-                          if (!_isLogin)
-                            TextFormField(
-                              decoration: const InputDecoration(
-                                labelText: 'Username',
-                              ),
-                              validator: (value) {
-                                if (value == null || value.trim().length < 4) {
-                                  return 'Username must be at least 4 characters long.';
-                                }
-                                return null;
-                              },
-                              onSaved: (value) {
-                                _enteredUsername = value!;
-                              },
-                            ),
                           const SizedBox(height: 12),
+                          // Submit button
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
