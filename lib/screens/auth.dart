@@ -49,9 +49,6 @@ class _AuthScreenState extends State<AuthScreen> {
         );
 
         try {
-          if (_pickedImage == null){
-            _pickedImage = File('assets/images/default-profile.jpg');
-          }
           final fileBytes = await _pickedImage!.readAsBytes();
           final fileExt = _pickedImage!.path.split('.').last;
           final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
