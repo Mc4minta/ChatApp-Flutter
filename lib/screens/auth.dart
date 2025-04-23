@@ -49,11 +49,21 @@ class _AuthScreenState extends State<AuthScreen> {
         );
 
         try {
-          final fileBytes = await _pickedImage!.readAsBytes();
-          final fileExt = _pickedImage!.path.split('.').last;
+          // Read image bytes
+          final fileBytes =
+              _pickedImage != null
+                  ? await _pickedImage!.readAsBytes()
+                  : await DefaultAssetBundle.of(context)
+                      .load('assets/images/default-profile.jpg')
+                      .then((bd) => bd.buffer.asUint8List());
+
+          // Generate filename and extension
+          final fileExt =
+              _pickedImage != null ? _pickedImage!.path.split('.').last : 'jpg';
           final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
           final path = 'uploads/$fileName';
 
+          // Upload to Supabase
           final response = await _supabase.storage
               .from('images')
               .uploadBinary(
@@ -61,8 +71,10 @@ class _AuthScreenState extends State<AuthScreen> {
                 fileBytes,
                 fileOptions: FileOptions(contentType: 'image/$fileExt'),
               );
-          
+
+          // Get public URL
           final imageUrl = _supabase.storage.from('images').getPublicUrl(path);
+
 
           await FirebaseFirestore.instance
               .collection('users')
@@ -135,10 +147,11 @@ class _AuthScreenState extends State<AuthScreen> {
                   left: 20,
                   right: 20,
                 ),
-                width: 200,
-                child: Image.asset('assets/images/chat.png'),
+                width: 300,
+                child: Image.asset('assets/Logo.jpg', fit: BoxFit.cover),
               ),
               Card(
+                color: const Color.fromARGB(255, 232, 232, 233),
                 margin: const EdgeInsets.all(20),
                 child: SingleChildScrollView(
                   child: Padding(
@@ -148,6 +161,20 @@ class _AuthScreenState extends State<AuthScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          if (!_isLogin)
+                            Text(
+                              "Profile Image",
+                              style: TextStyle(
+                                color: Color.fromARGB(
+                                  255,
+                                  100,
+                                  100,
+                                  100,
+                                ), // Soft grey for elegance
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           if (!_isLogin)
                             CircleAvatar(
                               radius: 40,
@@ -176,7 +203,16 @@ class _AuthScreenState extends State<AuthScreen> {
                                   },
                                   icon: const Icon(Icons.image),
                                   label: const Text("Gallery"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Color.fromARGB(
+                                      255,
+                                      188,
+                                      242,
+                                      255,
+                                    ),
+                                  ),
                                 ),
+                                SizedBox(width: 10),
                                 ElevatedButton.icon(
                                   onPressed: () async {
                                     var pickedFile = await _picker.pickImage(
@@ -190,6 +226,14 @@ class _AuthScreenState extends State<AuthScreen> {
                                   },
                                   icon: const Icon(Icons.camera_alt),
                                   label: const Text("Camera"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Color.fromARGB(
+                                      255,
+                                      188,
+                                      242,
+                                      255,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -249,10 +293,12 @@ class _AuthScreenState extends State<AuthScreen> {
                           // Submit button
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(
-                                    context,
-                                  ).colorScheme.primaryContainer,
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                188,
+                                242,
+                                255,
+                              ),
                             ),
                             onPressed: () {
                               submit();

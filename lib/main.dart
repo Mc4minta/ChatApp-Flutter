@@ -41,7 +41,7 @@ class App extends StatelessWidget {
       title: 'FlutterChat',
       theme: ThemeData().copyWith(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 17, 92, 177),
+          seedColor: const Color.fromARGB(255, 188, 242, 255),
         ),
       ),
       home: StreamBuilder(
