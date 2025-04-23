@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-// A MessageBubble for showing a single chat message on the ChatScreen.
 class MessageBubble extends StatelessWidget {
-  // Create a message bubble which is meant to be the first in the sequence.
   const MessageBubble.first({
     super.key,
     required this.userImage,
@@ -11,32 +9,18 @@ class MessageBubble extends StatelessWidget {
     required this.isMe,
   }) : isFirstInSequence = true;
 
-  // Create a amessage bubble that continues the sequence.
   const MessageBubble.next({
     super.key,
     required this.message,
     required this.isMe,
-  }) : isFirstInSequence = false,
-       userImage = null,
-       username = null;
+  })  : isFirstInSequence = false,
+        userImage = null,
+        username = null;
 
-  // Whether or not this message bubble is the first in a sequence of messages
-  // from the same user.
-  // Modifies the message bubble slightly for these different cases - only
-  // shows user image for the first message from the same user, and changes
-  // the shape of the bubble for messages thereafter.
   final bool isFirstInSequence;
-
-  // Image of the user to be displayed next to the bubble.
-  // Not required if the message is not the first in a sequence.
   final String? userImage;
-
-  // Username of the user.
-  // Not required if the message is not the first in a sequence.
   final String? username;
   final String message;
-
-  // Controls how the MessageBubble will be aligned.
   final bool isMe;
 
   @override
@@ -50,20 +34,28 @@ class MessageBubble extends StatelessWidget {
             isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Show avatar only if it's the first in sequence AND not the sender
           if (!isMe)
-            CircleAvatar(
-              backgroundImage: userImage != null
-                ? NetworkImage(userImage!)
-                : const AssetImage('assets/images/default-profile.jpg'),
-              backgroundColor: theme.colorScheme.primary.withAlpha(180),
-              radius: 20,
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: isFirstInSequence
+                  ? CircleAvatar(
+                      backgroundImage: userImage != null
+                          ? NetworkImage(userImage!)
+                          : const AssetImage('assets/images/default-profile.jpg')
+                              as ImageProvider,
+                      backgroundColor: theme.colorScheme.primary.withAlpha(180),
+                      radius: 20,
+                    )
+                  : const SizedBox(width: 40), // Fake avatar space for alignment
             ),
-          // Message Column
+          // username and chat bubble
           Column(
             crossAxisAlignment:
                 isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
               if (isFirstInSequence && username != null)
+                // sender username
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
@@ -74,30 +66,26 @@ class MessageBubble extends StatelessWidget {
                     ),
                   ),
                 ),
+              // sender message bubble
               Container(
                 decoration: BoxDecoration(
-                  color:
-                      isMe
-                          ? Colors.grey[300]
-                          : theme.colorScheme.secondary.withAlpha(200),
+                  color: isMe
+                      ? Colors.grey[300]
+                      : theme.colorScheme.secondary.withAlpha(200),
                   borderRadius: BorderRadius.only(
-                    topLeft:
-                        !isMe && isFirstInSequence
-                            ? Radius.zero
-                            : const Radius.circular(12),
-                    topRight:
-                        isMe && isFirstInSequence
-                            ? Radius.zero
-                            : const Radius.circular(12),
+                    topLeft: !isMe && isFirstInSequence
+                        ? Radius.zero
+                        : const Radius.circular(12),
+                    topRight: isMe && isFirstInSequence
+                        ? Radius.zero
+                        : const Radius.circular(12),
                     bottomLeft: const Radius.circular(12),
                     bottomRight: const Radius.circular(12),
                   ),
                 ),
                 constraints: const BoxConstraints(maxWidth: 250),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 14,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 child: Text(
                   message,
@@ -110,17 +98,20 @@ class MessageBubble extends StatelessWidget {
               ),
             ],
           ),
-
-          // Avatar on the right (if it's my message)
-          if (isMe && userImage != null) const SizedBox(width: 12),
+          // Avatar on the right for "me" (if wanted)
           if (isMe)
-            CircleAvatar(
-              backgroundImage:
-                  userImage != null
-                      ? NetworkImage(userImage!)
-                      : const AssetImage('assets/images/default-profile.jpg'),
-              backgroundColor: theme.colorScheme.primary.withAlpha(180),
-              radius: 20,
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: isFirstInSequence
+                  ? CircleAvatar(
+                      backgroundImage: userImage != null
+                          ? NetworkImage(userImage!)
+                          : const AssetImage('assets/images/default-profile.jpg')
+                              as ImageProvider,
+                      backgroundColor: theme.colorScheme.primary.withAlpha(180),
+                      radius: 20,
+                    )
+                  : const SizedBox(width: 40), // Fake avatar space for alignment
             ),
         ],
       ),
