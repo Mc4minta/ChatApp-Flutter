@@ -25,5 +25,5 @@ The Structure is base on the course but there are some features i added myself a
 # Brief Demo
 
 <div align="center">
-  <img src="assets/Animation.gif" alt="Demo gif" />
+  <img src="assets/Animation.gif" alt="Demo gif" width="300" />
 </div>
