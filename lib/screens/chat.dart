@@ -33,12 +33,18 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
-        title: Text('FlutterChat'),
+        backgroundColor: Color.fromARGB(255, 0, 204, 255), // Color.fromARGB(255, 121, 121, 121),
+        // title: Text('FlutterChat'),
+        title: Text(
+          'FlutterChat',
+          style: TextStyle(color: Color.fromARGB(255, 0, 69, 100),fontWeight: FontWeight.w900),
+        ), //Image.asset('assets/Logo-nobg.jpg', fit: BoxFit.cover,width: 200,),
         actions: [
           IconButton(
             onPressed: () => FirebaseAuth.instance.signOut(),
-            icon: Icon(Icons.exit_to_app),
+            icon: Icon(Icons.exit_to_app,color: Color.fromARGB(255, 0, 69, 100),),
             color: Theme.of(context).colorScheme.primary,
           ),
         ],

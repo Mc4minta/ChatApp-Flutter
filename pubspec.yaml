@@ -97,5 +97,5 @@ flutter:
   assets :
     - assets/images/chat.png
     - assets/images/default-profile.jpg
-    - assets/Logo-nobg.png
+    - assets/Logo-nobg.jpg
     - assets/Logo.jpg

@@ -48,28 +48,48 @@ class _NewMessageState extends State<NewMessage> {
   }
 
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 15, right: 1, bottom: 14),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              textCapitalization: TextCapitalization.sentences,
-              autocorrect: true,
-              enableSuggestions: true,
-              decoration: const InputDecoration(labelText: 'Send a message...'),
-            ),
+    return Column(
+      children: [
+        Container(
+          color: Color.fromARGB(255, 0, 69, 100),
+          height: 0.5,
+        ),
+        Container(
+          padding: const EdgeInsets.only(left: 5, right: 1, bottom: 14, top: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _messageController,
+                  textCapitalization: TextCapitalization.sentences,
+                  autocorrect: true,
+                  enableSuggestions: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Send a message...',
+                    labelStyle: TextStyle(color: Color.fromARGB(255, 0, 69, 100)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(16),
+                      ), // Rounded corners
+                      borderSide: BorderSide(
+                        color: Color.fromARGB(255, 0, 69, 100),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              IconButton(
+                color: Color.fromARGB(255, 0, 204, 255),
+                icon: const Icon(Icons.send),
+                onPressed: () {
+                  _submitMessage();
+                },
+              ),
+            ],
           ),
-          IconButton(
-            color: Theme.of(context).colorScheme.primary,
-            icon: const Icon(Icons.send),
-            onPressed: () {
-              _submitMessage();
-            },
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

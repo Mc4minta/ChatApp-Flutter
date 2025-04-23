@@ -62,7 +62,7 @@ class MessageBubble extends StatelessWidget {
                     username!,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Color.fromARGB(255, 0, 69, 100),
                     ),
                   ),
                 ),
@@ -71,7 +71,7 @@ class MessageBubble extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isMe
                       ? Colors.grey[300]
-                      : theme.colorScheme.secondary.withAlpha(200),
+                      : Color.fromARGB(255, 0, 204, 255), // theme.colorScheme.secondary.withAlpha(200),
                   borderRadius: BorderRadius.only(
                     topLeft: !isMe && isFirstInSequence
                         ? Radius.zero
